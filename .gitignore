@@ -1,0 +1,10 @@
+# 构建产物
+site/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Material for MkDocs 缓存（社交卡片等）
+.cache/
