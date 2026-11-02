@@ -2,10 +2,10 @@
 # 官方文档: https://squidfunk.github.io/mkdocs-material/
 
 site_name: C1SEC
-# 本仓库名为 c1sec.github.io（非 <组织名>.github.io），故 Pages 地址带仓库名子路径
-site_url: https://hfut-c1sec.github.io/c1sec.github.io/
-repo_url: https://github.com/HFUT-C1Sec/c1sec.github.io
-repo_name: HFUT-C1Sec/c1sec.github.io
+# 仓库名为 <组织名>.github.io，Pages 站点位于组织根域名
+site_url: https://hfut-c1sec.github.io/
+repo_url: https://github.com/HFUT-C1Sec/HFUT-C1Sec.github.io
+repo_name: HFUT-C1Sec/HFUT-C1Sec.github.io
 edit_uri: edit/main/docs/   # 默认按 master 分支推导，本仓库是 main，不显式指定会 404
 
 site_description: C1SEC 社团官方网站
