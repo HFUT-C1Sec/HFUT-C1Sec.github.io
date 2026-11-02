@@ -1,13 +1,12 @@
 # C1SEC 社团站点配置
 # 官方文档: https://squidfunk.github.io/mkdocs-material/
 
-# TODO 部署前修改以下三项（见 README.md「部署步骤」）：
-#   site_url  形如 https://<组织名>.github.io/<仓库名>/；若仓库名就是 <组织名>.github.io，则填根域名
-#   repo_url / repo_name  用于页面右上角跳转到仓库
 site_name: C1SEC
-# site_url: https://example-org.github.io/c1sec/
-# repo_url: https://github.com/example-org/c1sec
-# repo_name: example-org/c1sec
+# 本仓库名为 c1sec.github.io（非 <组织名>.github.io），故 Pages 地址带仓库名子路径
+site_url: https://hfut-c1sec.github.io/c1sec.github.io/
+repo_url: https://github.com/HFUT-C1Sec/c1sec.github.io
+repo_name: HFUT-C1Sec/c1sec.github.io
+edit_uri: edit/main/docs/   # 默认按 master 分支推导，本仓库是 main，不显式指定会 404
 
 site_description: C1SEC 社团官方网站
 
