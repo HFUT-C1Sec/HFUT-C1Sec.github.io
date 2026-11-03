@@ -110,10 +110,6 @@ nav:
       
       
 
-  - 培训计划表:
-      - training/index.md
-      - 第 1 周: training/week-01.md
-
   - 知识点合集速查表:  # 网络安全知识点速查合集
       - 栏目介绍: cheatsheet/index.md
       - 基础入门:
@@ -186,6 +182,11 @@ nav:
           - "Java 安全知识图谱": cheatsheet/graphs/59-java-security-graph.html
           - "安全工具知识图谱": cheatsheet/graphs/60-tools-graph.html
           - "AI & Security 知识图谱": cheatsheet/graphs/61-ai-security-graph.html
+
+  # 「培训计划表」固定放在最后一个 tab，新增栏目请插在它前面
+  - 培训计划表:
+      - training/index.md
+      - 第 1 周: training/week-01.md
 
 plugins:
   - search
