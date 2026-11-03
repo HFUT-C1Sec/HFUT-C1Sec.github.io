@@ -114,6 +114,79 @@ nav:
       - training/index.md
       - 第 1 周: training/week-01.md
 
+  - 知识点合集速查表:  # 网络安全知识点速查合集
+      - 栏目介绍: cheatsheet/index.md
+      - 基础入门:
+          - "Web 基础与 HTTP 协议安全": cheatsheet/01-web-basics-http.md
+          - "编码与古典密码": cheatsheet/02-encoding-classical-ciphers.md
+          - "Linux 安全渗透测试": cheatsheet/03-linux-pentest.md
+          - "Windows 安全渗透测试": cheatsheet/04-windows-pentest.md
+          - "工具链全攻略": cheatsheet/05-toolchain.md
+          - "信息收集": cheatsheet/06-recon.md
+          - "CTF Python 速成与脚本化": cheatsheet/07-ctf-python.md
+      - Web 漏洞 · 注入类:
+          - "OWASP Top 10 速查表": cheatsheet/08-owasp-top10.md
+          - "SQL 注入": cheatsheet/09-sql-injection.md
+          - "NoSQL 注入": cheatsheet/10-nosql-injection.md
+          - "命令注入": cheatsheet/11-command-injection.md
+          - "XSS": cheatsheet/12-xss.md
+          - "前端安全": cheatsheet/13-frontend-security.md
+          - "文件上传与包含": cheatsheet/14-file-upload-lfi.md
+          - "SSRF": cheatsheet/15-ssrf.md
+          - "XXE": cheatsheet/16-xxe.md
+          - "SSTI 模板注入": cheatsheet/17-ssti.md
+          - "反序列化注入": cheatsheet/18-deserialization.md
+          - "中间件与数据库安全": cheatsheet/19-middleware-database.md
+          - "WAF 绕过": cheatsheet/20-waf-bypass.md
+      - OWASP 分类速查:
+          - "失效的访问控制（A01）": cheatsheet/21-a01-broken-access-control.md
+          - "加密机制失效（A02）": cheatsheet/22-a02-cryptographic-failures.md
+          - "不安全设计（A04）": cheatsheet/23-a04-insecure-design.md
+          - "安全配置错误（A05）": cheatsheet/24-a05-security-misconfiguration.md
+          - "易受攻击和过时的组件（A06）": cheatsheet/25-a06-vulnerable-components.md
+          - "身份认证失效（A07）": cheatsheet/26-a07-auth-failures.md
+          - "软件和数据完整性失效（A08）": cheatsheet/27-a08-integrity-failures.md
+          - "安全日志与监控失效（A09）": cheatsheet/28-a09-logging-monitoring.md
+      - 密码学:
+          - "AES 与哈希攻击": cheatsheet/29-aes-hash.md
+          - "RSA 攻击": cheatsheet/30-rsa.md
+          - "密码学攻击与哈希传递": cheatsheet/31-crypto-pth.md
+      - 内网与云原生:
+          - "内网渗透与域渗透": cheatsheet/32-internal-ad.md
+          - "代理与隧道技术": cheatsheet/33-proxy-tunnel.md
+          - "云上安全渗透测试": cheatsheet/34-cloud-pentest.md
+          - "Kubernetes 安全": cheatsheet/35-kubernetes.md
+          - "Docker 逃逸": cheatsheet/36-docker-escape.md
+          - "供应链安全": cheatsheet/37-supply-chain.md
+      - 审计 · 逆向 · 二进制:
+          - "代码审计": cheatsheet/38-code-audit.md
+          - "二进制漏洞利用（PWN）": cheatsheet/39-pwn.md
+          - "逆向分析入门": cheatsheet/40-reverse-engineering.md
+          - "逆向套路与算法还原": cheatsheet/41-reverse-patterns.md
+          - "隐写术": cheatsheet/42-steganography.md
+          - "取证分析": cheatsheet/43-forensics.md
+          - "恶意文档分析": cheatsheet/44-malicious-document.md
+      - 跨域与新兴方向:
+          - "移动端安全渗透测试": cheatsheet/45-mobile-pentest.md
+          - "IoT 与嵌入式安全": cheatsheet/46-iot-embedded.md
+          - "工控安全（ICS/SCADA）": cheatsheet/47-ics-scada.md
+          - "邮件安全": cheatsheet/48-email-security.md
+          - "社会工程学与钓鱼": cheatsheet/49-social-engineering.md
+          - "AI Agent 与 MCP 安全": cheatsheet/50-ai-agent-mcp.md
+          - "AI 辅助 CTF": cheatsheet/51-ai-ctf.md
+      - 实战与复盘:
+          - "SRC 实战：信息收集与工具联动": cheatsheet/52-src-recon.md
+          - "SRC 实战：Sitecore 渗透全过程": cheatsheet/53-src-sitecore.md
+          - "SRC 实战：文件上传与 API 安全": cheatsheet/54-src-upload-api.md
+          - "SRC 实战：逻辑漏洞挖掘": cheatsheet/55-src-logic-bugs.md
+          - "SRC 实战：报告撰写与避坑": cheatsheet/56-src-reporting.md
+          - "XSS 实战：打击灰黑产": cheatsheet/57-xss-real-world.md
+          - "CTF Writeup 规范与复盘": cheatsheet/58-ctf-writeup.md
+      - 知识图谱:
+          - "Java 安全知识图谱": cheatsheet/graphs/59-java-security-graph.html
+          - "安全工具知识图谱": cheatsheet/graphs/60-tools-graph.html
+          - "AI & Security 知识图谱": cheatsheet/graphs/61-ai-security-graph.html
+
 plugins:
   - search
   - tags
@@ -127,6 +200,7 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
+      slugify: !!python/name:markdown.extensions.toc.slugify_unicode
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span

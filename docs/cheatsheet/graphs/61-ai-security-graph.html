@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>先知社区 · AI&amp;Security知识图谱（悬浮版）</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+  html,body{margin:0;padding:0;height:100%;background:#0e1624;color:#E6EDF3;
+    font-family:'Roboto','PingFang SC','Segoe UI',Arial,sans-serif;}
+  *{box-sizing:border-box;}
+  #header{padding:14px 18px 10px;border-bottom:1px solid rgba(255,255,255,0.08);}
+  #title{font-size:18px;font-weight:600;color:#fff;}
+  #title .badge{font-size:11px;color:#0e1624;background:#FFD666;border-radius:4px;padding:2px 8px;margin-left:8px;vertical-align:2px;}
+  #stats{font-size:12px;color:#8B949E;margin-top:4px;line-height:1.6;}
+  #toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px;}
+  .btn{padding:6px 14px;border-radius:6px;border:1px solid #2E4A66;background:rgba(88,166,255,0.12);
+    color:#58A6FF;font-size:12px;cursor:pointer;font-family:inherit;}
+  .btn:hover{background:rgba(88,166,255,0.25);}
+  #search{flex:1 1 240px;min-width:160px;max-width:420px;padding:7px 12px;border-radius:6px;
+    border:1px solid #2E4A66;background:#101B2E;color:#E6EDF3;font-size:13px;outline:none;font-family:inherit;}
+  #search:focus{border-color:#58A6FF;}
+  #matchInfo{font-size:12px;color:#8B949E;}
+  #hint{font-size:11px;color:#6B7A8E;margin-top:6px;}
+  #main{width:100%;height:calc(100vh - 210px);min-height:420px;}
+  #legend{position:fixed;left:18px;bottom:40px;display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:#8B949E;
+    background:rgba(14,22,36,0.8);padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);z-index:9;}
+  #legend .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px;}
+  #footer{padding:6px 18px 10px;font-size:11px;color:#6B7A8E;border-top:1px solid rgba(255,255,255,0.06);line-height:1.6;}
+  #footer a{color:#58A6FF;text-decoration:none;}
+</style>
+</head>
+<body>
+<div id="header">
+  <div id="title">先知社区 · AI&amp;Security知识图谱<span class="badge">可拖拽悬浮版</span></div>
+  <div id="stats"></div>
+  <div id="toolbar">
+    <button class="btn" id="btnExpand">全部展开</button>
+    <button class="btn" id="btnCollapse">全部收起</button>
+    <input id="search" placeholder="搜索词条/栏目，如 prompt、mcp、rag、agent、越狱" />
+    <span id="matchInfo"></span>
+  </div>
+  <div id="hint">提示：节点可自由拖拽悬浮；点击「大类 / 栏目」节点展开或收起下级；点击「词条」节点打开原文；滚轮缩放、空白处拖拽平移。</div>
+</div>
+<div id="main"></div>
+<div id="legend"></div>
+<div id="footer"></div>
+<script>
+(function(){
+  var KG_DATA = [
+    {
+        "name":  "Readme",
+        "topics":  [
+            {
+                "name":  "Readme",
+                "articles":  [
+                    {"id": 443, "title": "README"}
+                ]
+            }
+        ]
+    },
+    {
+        "name":  "AI安全基础",
+        "topics":  [
+            {
+                "name":  "README",
+                "articles":  [
+                    {"id": 444, "title": "readme"}
+                ]
+            },
+            {
+                "name":  "pytorch",
+                "articles":  [
+                    {"id": 445, "title": "深入浅出PyTorch"}
+                ]
+            },
+            {
+                "name":  "LLM",
+                "articles":  [
+                    {"id": 446, "title": "happy-llm"},
+                    {"id": 447, "title": "base-llm"},
+                    {"id": 448, "title": "llm-cookbook"}
+                ]
+            },
+            {
+                "name":  "handy-ollama",
+                "articles":  [
+                    {"id": 449, "title": "handy-ollama"}
+                ]
+            },
+            {
+                "name":  "agent",
+                "articles":  [
+                    {"id": 450, "title": "Hello-Agents"}
+                ]
+            },
+            {
+                "name":  "RAG",
+                "articles":  [
+                    {"id": 451, "title": "All-in-RAG"}
+                ]
+            }
+        ]
+    },
+    {
+        "name":  "AI自身安全",
+        "topics":  [
+            {
+                "name":  "大模型组件漏洞",
+                "articles":  [
+                    {"id": 452, "title": "【其他组件】从 VCTF2025 ez_train学习torch.load反序列化绕过"},
+                    {"id": 453, "title": "【其他组件】CVE-2025-32444：Mooncake模块无授权RCE漏洞验证"},
+                    {"id": 454, "title": "【其他组件】React4Shell 漏洞分析 (cve-2025-55182)"},
+                    {"id": 455, "title": "【其他组件】CVE-2025-51482：Letta AI 组件代码注入导致远程命令执行漏洞详细分析"},
+                    {"id": 456, "title": "【其他组件】全方位深入分析CVE-2025-1750——SQL 注入可升级到任意文件读写-潜在 RCE"},
+                    {"id": 457, "title": "【其他组件】CVE-2026-21869 自托管推理服务：llama.cpp 远程内存破坏（可潜在 RCE）"},
+                    {"id": 458, "title": "【其他组件】CVE-2025-14279_ MLflow DNS Rebinding 漏洞分析"},
+                    {"id": 459, "title": "【其他组件】Ai-LlamaIndex SQL2RCE漏洞分析(CVE-2024-11958)"},
+                    {"id": 460, "title": "【其他组件】CVE-2026-22218：Chainlit任意文件读取漏洞详细分析"},
+                    {"id": 461, "title": "【大模型应用相关漏洞】OpenCode 未认证远程命令执行漏洞"},
+                    {"id": 462, "title": "【大模型应用相关漏洞】ComfyUI未授权命令执行漏洞CVE-2025-67303 分析"},
+                    {"id": 463, "title": "【大模型应用相关漏洞】Llama-Factory 代码执行漏洞详细分析"},
+                    {"id": 464, "title": "【大模型应用相关漏洞】ComfyUI-Manager CRLF注入导致代码执行漏洞分析及CVE-2025-67303 绕过分析"},
+                    {"id": 465, "title": "【大模型应用相关漏洞】MindsDB 未授权任意文件读取漏洞详细分析"},
+                    {"id": 466, "title": "【大模型应用相关漏洞】CVE-2026-22813：OpenCode 从XSS到RCE代码层面深度解析"},
+                    {"id": 467, "title": "【大模型应用相关漏洞】MindsDB BYOM 远程代码执行漏洞挖掘分析"},
+                    {"id": 468, "title": "【大模型应用相关漏洞】Llama-Factory vhead_file 代码执行漏洞（CVE-2025-53002）"},
+                    {"id": 469, "title": "【大模型应用相关漏洞】DeepChat MermaidArtifact 从xss到代码执行漏洞分析"},
+                    {"id": 470, "title": "【大模型应用相关漏洞】DeepChat FilePresenter 任意文件读取写入漏洞(可读取明文 key)"},
+                    {"id": 471, "title": "【大模型应用相关漏洞】Feast特征存储平台YAML反序列化远程代码执行漏洞分析"},
+                    {"id": 472, "title": "【大模型应用相关漏洞】Web中关于AI功能点的漏洞挖掘"},
+                    {"id": 473, "title": "【大模型应用相关漏洞】IDA-PRO-MCP 远程代码执行漏洞（CVE-2025-67117）"},
+                    {"id": 474, "title": "【大模型应用相关漏洞】AI-Cursor本地命令执行漏洞分析"},
+                    {"id": 475, "title": "【大模型应用相关漏洞】Ollama Template Injection 漏洞分析"},
+                    {"id": 476, "title": "【大模型应用相关漏洞】Cherry Studio 伪造MCP服务到RCE"},
+                    {"id": 477, "title": "【沙箱绕过】CrewAI SandboxPython 沙箱绕过利用"},
+                    {"id": 478, "title": "【沙箱绕过】vm2 沙箱逃逸漏洞分析 (CVE-2026-22709)"},
+                    {"id": 479, "title": "【沙箱绕过】CVE-2026-22686：AI代理沙箱的完美逃逸"},
+                    {"id": 480, "title": "【MCP协议利用】LibreChat MCP Stdio CVE-2026-22252远程代码执行漏洞分析"},
+                    {"id": 481, "title": "【MCP协议利用】CVE-2026-22688 - 腾讯WeKnora MCP Stdio 命令注入漏洞"},
+                    {"id": 482, "title": "【MCP协议利用】MCP Inspector 未授权访问致代码执行漏洞（CVE-2025-49596）"},
+                    {"id": 483, "title": "【MCP协议利用】Orval MCP Code Injection 导致 RCE 分析"},
+                    {"id": 484, "title": "【AI 基础框架与库】【Keras - Transformers】CVE-2025-14929：Transformers脚本因未校验.pth文件致任意代码执行"},
+                    {"id": 485, "title": "【AI 基础框架与库】【Keras - Transformers】Keras 3 深度学习框架路径遍历漏洞分析"},
+                    {"id": 486, "title": "【AI 基础框架与库】【Pytorch】深度解析pytorch rpc模块rce"},
+                    {"id": 487, "title": "【AI 基础框架与库】【Pytorch】PyTorch Distributed Checkpoint 远程代码执行漏洞分析"},
+                    {"id": 488, "title": "【AI 基础框架与库】【Pytorch】PyTorch 最新版本反序列化漏洞分析"},
+                    {"id": 489, "title": "【AI 基础框架与库】【Pytorch】PyTorch 分布式检查点 Pickle 反序列化 RCE 漏洞分析"},
+                    {"id": 490, "title": "【AI 工作流编排与自动化】【编排框架】大模型编排框架攻防(以LangChain为例)"},
+                    {"id": 491, "title": "【AI 工作流编排与自动化】【编排框架】LangChain 反序列化注入漏洞分析（CVE-2025-68664）"},
+                    {"id": 492, "title": "【AI 工作流编排与自动化】【编排框架】LangGraph SQLite Store $ne 操作符访问控制绕过漏洞分析"},
+                    {"id": 493, "title": "【AI 工作流编排与自动化】【编排框架】Langflow RCE远程代码执行漏洞分析（CVE-2025-3248）"},
+                    {"id": 494, "title": "【AI 工作流编排与自动化】【编排框架】Langflow SSRF 服务器端请求伪造漏洞(CVE-2025-68477)"},
+                    {"id": 495, "title": "【AI 工作流编排与自动化】【Dify】Dify任意用户密码重置漏洞"},
+                    {"id": 496, "title": "【AI 工作流编排与自动化】【Dify】Dify 沙箱逃逸漏洞 RCE 分析"},
+                    {"id": 497, "title": "【AI 工作流编排与自动化】【Dify】Dify Vanna模块远程代码执行漏洞"},
+                    {"id": 498, "title": "【AI 工作流编排与自动化】【n8n】CVE-2025-65964_ n8n Git 节点 RCE 漏洞分析"},
+                    {"id": 499, "title": "【AI 工作流编排与自动化】【n8n】CVE-2026-0863：n8n Python任务运行器沙箱逃逸RCE漏洞代码层面详细解析"},
+                    {"id": 500, "title": "【AI 工作流编排与自动化】【n8n】n8n Expression RCE CVE-2026-1470漏洞分析"},
+                    {"id": 501, "title": "【AI 工作流编排与自动化】【n8n】n8n Python 最新沙箱逃逸漏洞分析"},
+                    {"id": 502, "title": "【AI 工作流编排与自动化】【n8n】n8n沙箱绕过分析"},
+                    {"id": 503, "title": "【AI 工作流编排与自动化】【n8n】AI 应用 n8n 未授权到 RCE 漏洞 CVE-2026-21858"},
+                    {"id": 504, "title": "【AI 工作流编排与自动化】【n8n】CVE-2025-65964：n8n Git 节点配置注入 RCE 漏洞分析(二)"},
+                    {"id": 505, "title": "【AI 工作流编排与自动化】【n8n】CVE-2025-62726：n8n Git 节点裸仓库 RCE 漏洞分析"},
+                    {"id": 506, "title": "【AI 工作流编排与自动化】【n8n】CVE-2026-21877：n8n Git 节点任意文件写入漏洞分析 (三)"},
+                    {"id": 507, "title": "【AI 推理服务与模型加载】【Ollama】CVE-2024-37032 Ollama远程代码执行漏洞分析报告"},
+                    {"id": 508, "title": "【AI 推理服务与模型加载】【Ollama】Ollama未授权访问分析"},
+                    {"id": 509, "title": "【AI 推理服务与模型加载】【Ollama】CVE-2024-45436：Ollama ZIP文件解压导致的命令执行漏洞"},
+                    {"id": 510, "title": "【AI 推理服务与模型加载】【Ollama】CVE-2024-39722 Ollama 模型文件存在性漏洞"},
+                    {"id": 511, "title": "【AI 推理服务与模型加载】【vLLM】vLLM PyNcclPipe pickle反序列化漏洞（CVE-2025-47277）分析"},
+                    {"id": 512, "title": "【AI 推理服务与模型加载】【vLLM】vLLM高危远程代码执行漏洞分析（CVE-2025-62164）"},
+                    {"id": 513, "title": "【AI 推理服务与模型加载】【vLLM】CVE-2025-24357：vLLM实现恶意模型远程代码执行漏洞详细分析"}
+                ]
+            },
+            {
+                "name":  "论文系列",
+                "articles":  [
+                    {"id": 514, "title": "【Agent】从助手到对手-探索移动大型语言模型智能体的安全风险"},
+                    {"id": 515, "title": "【Agent】大型语言模型的阴暗面-基于智能体的完全计算机接管攻击"},
+                    {"id": 516, "title": "【RAG】SafeRAG-大型语言模型检索增强生成中的安全性基准测试"},
+                    {"id": 517, "title": "【RAG】保护RAG-风险评估与缓解框架"},
+                    {"id": 518, "title": "【MCP】模型上下文协议-全景-安全威胁与未来研究方向"},
+                    {"id": 519, "title": "【MCP】MCP安全审计-使用模型上下文协议的大型语言模型允许重大安全漏洞利用"},
+                    {"id": 520, "title": "【MCP】MCP-Guard-大型语言模型应用中模型上下文协议完整性的防御框架"},
+                    {"id": 521, "title": "【MCP】MCPSecBench-测试模型上下文协议的系统性安全基准和实验场"},
+                    {"id": 522, "title": "【MCP】模型上下文协议的企业级安全-框架与缓解策略"},
+                    {"id": 523, "title": "【数据投毒】针对行为克隆策略的数据集投毒攻击"},
+                    {"id": 524, "title": "【数据投毒】学习投毒大语言模型以实现下游任务的操控"},
+                    {"id": 525, "title": "【数据投毒】大语言模型投毒攻击仅需近乎常数级的样本量"},
+                    {"id": 526, "title": "【数据投毒】利用数据污染对深度学习系统的定向后门攻击"},
+                    {"id": 527, "title": "【数据投毒】针对神经网络的有针对性清洁标签中毒攻击"},
+                    {"id": 528, "title": "【提示词注入系列】提示注入攻击-对大型语言模型的新兴威胁"},
+                    {"id": 529, "title": "【提示词注入系列】大型语言模型中的多语言越狱挑战"},
+                    {"id": 530, "title": "【提示词注入系列】对比对语言模型的普遍且可转移的对抗性攻击"},
+                    {"id": 531, "title": "【提示词注入系列】AutoDAN：在对齐大型语言模型上生成隐形越狱提示"},
+                    {"id": 532, "title": "【提示词注入系列】安全解码：通过安全意识解码防御越狱攻击"},
+                    {"id": 533, "title": "【提示词注入系列】针对集成 LLM 应用的提示注入攻击"},
+                    {"id": 534, "title": "【提示词注入系列】通过内译安全意识探测防御大型语言模型免受越狱攻击"},
+                    {"id": 535, "title": "README"}
+                ]
+            },
+            {
+                "name":  "阿里云AI安全全球挑战赛",
+                "articles":  [
+                    {"id": 536, "title": "2025阿里AI安全挑战赛参赛总结与三大赛道攻防技术解析"},
+                    {"id": 537, "title": "基于阿里AI安全全球挑战赛靶场的AI智能体安全攻防研究"},
+                    {"id": 538, "title": "大模型安全撬壳：对内容安全的学习"},
+                    {"id": 539, "title": "阿里AI全球挑战赛-大模型越狱的攻击思路"},
+                    {"id": 540, "title": "AI安全挑战赛：以攻促防构建大模型多级防御体系"},
+                    {"id": 541, "title": "Ai安全产品挑战赛-实战演练如何\"攻\"破大模型防线"},
+                    {"id": 542, "title": "大模型内容威胁-漏洞分析及防御实操总结"},
+                    {"id": 543, "title": "阿里云ai安全-全球攻防赛事文本攻击与防御机制研究"},
+                    {"id": 544, "title": "AI模型安全加固策略 防御方案实战复盘"},
+                    {"id": 545, "title": "README"}
+                ]
+            },
+            {
+                "name":  "AI安全全景",
+                "articles":  [
+                    {"id": 546, "title": "LLM应用测试范式的进化"},
+                    {"id": 547, "title": "Security of AI以及AI for Security，从代码安全到模型安全的对比分析"},
+                    {"id": 548, "title": "AI模型水印与后门检测：构建可信赖的AI供应链"},
+                    {"id": 549, "title": "大模型安全评测技术"},
+                    {"id": 550, "title": "红队视角：大型语言模型（LLM）多维攻击面思路"},
+                    {"id": 551, "title": "详解OWASP TOP 10 For LLM漏洞（上）"},
+                    {"id": 552, "title": "详解OWASP TOP 10 For LLM漏洞（下）"},
+                    {"id": 553, "title": "大模型改击与传统攻击的进化图增(一)"},
+                    {"id": 554, "title": "大模型攻击与传统攻击的进化图谱（二）"},
+                    {"id": 555, "title": "大模型系统安全实际案例及分析方法"},
+                    {"id": 556, "title": "LLM安全相关的实践分析与讨论"},
+                    {"id": 557, "title": "构建AI 大模型信息安全体系-从模块整合到整体防御"},
+                    {"id": 558, "title": "README"}
+                ]
+            },
+            {
+                "name":  "内容安全",
+                "articles":  [
+                    {"id": 559, "title": "【提示词注入】Prompt越狱手册"},
+                    {"id": 560, "title": "【提示词注入】【基础】提示词注入基础"},
+                    {"id": 561, "title": "【提示词注入】【基础】提示词注入攻击靶场通关实录及其能力泛化"},
+                    {"id": 562, "title": "【提示词注入】【基础】从AI提示词了解AI安全"},
+                    {"id": 563, "title": "【提示词注入】【基础】The Hackers Labs-Despromptado"},
+                    {"id": 564, "title": "【提示词注入】【基础】玩转国外LLM提示词注入靶场 HackAI 全关卡通关实战记录"},
+                    {"id": 565, "title": "【提示词注入】【提示词注入手法】简单攻击大模型的方法：翻转攻击，FlipAttack，论文及开源"},
+                    {"id": 566, "title": "【提示词注入】【提示词注入手法】ObliInjection：针对多源数据 LLM 智能体的顺序无关提示注入攻击"},
+                    {"id": 567, "title": "【提示词注入】【提示词注入手法】提示词注入之Special Token Injection"},
+                    {"id": 568, "title": "【提示词注入】【提示词注入手法】AI安全护栏攻防实战：智能问答与智能开发助手的提示词注入攻击分析"},
+                    {"id": 569, "title": "【提示词注入】【提示词注入手法】大模型安全防御绕过：提示词战场的前沿与实践"},
+                    {"id": 570, "title": "【提示词注入】【提示词注入手法】LLM安全之Decomposition Attack分解攻击"},
+                    {"id": 571, "title": "【提示词注入】【提示词注入手法】基于多轮上下文的语言模型越狱攻击研究与实证"},
+                    {"id": 572, "title": "【提示词注入】【提示词注入手法】CoA（Chain of Attack）多轮对话中的语义驱动攻击和越狱实战"},
+                    {"id": 573, "title": "【提示词注入】【案例】【提示词注入】AI 安全护栏场景下的绕过实战"},
+                    {"id": 574, "title": "【提示词注入】【案例】提示词供应链：从\"一键 Reprompt\"到\"系统提示投毒\""},
+                    {"id": 575, "title": "【提示词注入】【案例】从_提示注入_到_逻辑投毒_：2026年AI安全实战攻防"},
+                    {"id": 576, "title": "【提示词注入】【案例】深入分析微软最新漏洞Microsoft Copilot Reprompt单击触发的隐蔽数据外传链漏洞"},
+                    {"id": 577, "title": "【提示词注入】【案例】表情符号攻击：LLM 安全防线的隐蔽威胁"},
+                    {"id": 578, "title": "【提示词注入】【案例】AI编程助手的上下文毒化技术深度解析与实战复现"},
+                    {"id": 579, "title": "【提示词注入】【案例】LoopLLM：大模型Token能耗攻击新路径"},
+                    {"id": 580, "title": "【提示词注入】【案例】edusrc实战之AI提示词越狱"},
+                    {"id": 581, "title": "【提示词注入】【案例】AI 实战指南：通过提示词注入提取系统提示词的完整流程"},
+                    {"id": 582, "title": "【提示词注入】【案例】如何获取主流大模型的系统提示词"},
+                    {"id": 583, "title": "【提示词注入】【案例】防护 VS Code 免受提示词注入攻击"},
+                    {"id": 584, "title": "【提示词注入】【案例】AWS Kiro：通过间接提示词注入实现任意代码执行"},
+                    {"id": 585, "title": "【提示词注入】【案例】GitHub Copilot：通过提示词注入实现远程代码执行 (CVE-2025-53773)"},
+                    {"id": 586, "title": "【提示词注入】【案例】光标 IDE：通过 Mermaid 任意数据泄露（CVE-2025-54132）"},
+                    {"id": 587, "title": "【提示词注入】【案例】AI 安全攻防实战：大厂大模型从提示词注入到 XSS弹cookie"},
+                    {"id": 588, "title": "【提示词注入】【防护】LLM安全护栏攻防对抗：从绕过机制到纵深防御的系统性研究"},
+                    {"id": 589, "title": "【提示词注入】【防护】AI越狱与提示词注入的攻防实战：从检测评估到企业落地防护"},
+                    {"id": 590, "title": "【提示词注入】【防护】防御间接提示注入攻击"},
+                    {"id": 591, "title": "【提示词注入】【防护】防护 VS Code 免受提示词注入攻击"},
+                    {"id": 592, "title": "【提示词注入】【防护】大模型安全对齐"},
+                    {"id": 593, "title": "【幻觉】大模型幻觉背后的真相"},
+                    {"id": 594, "title": "【幻觉】大语言模型幻觉的实践分析与多种优化方法总结对比"},
+                    {"id": 595, "title": "【越狱】【越狱手法】多模态MLLMs的格式融合跨模块越狱攻击"},
+                    {"id": 596, "title": "【越狱】【越狱手法】大模型高级越狱实现手法"},
+                    {"id": 597, "title": "【越狱】【越狱手法】对抗样本引导的文生图越狱技术"},
+                    {"id": 598, "title": "【越狱】【越狱手法】AI大模型越狱攻防实战：从黑盒对抗到白盒逆向的深层技术剖析"},
+                    {"id": 599, "title": "【越狱】【越狱手法】大语言模型黑盒越狱攻击之模板补全"},
+                    {"id": 600, "title": "【越狱】【实战】ai越狱实践（二）"},
+                    {"id": 601, "title": "【越狱】【实战】ai越狱实践（一）"},
+                    {"id": 602, "title": "【越狱】README"}
+                ]
+            },
+            {
+                "name":  "模型层的安全",
+                "articles":  [
+                    {"id": 603, "title": "【大模型生命周期】AI 攻防下半场：从 Ray 集群沦陷到 HuggingFace 供应链投毒完整实录"},
+                    {"id": 604, "title": "【大模型生命周期】模型劫持到数据投毒聊聊AI供应链安全"},
+                    {"id": 605, "title": "【大模型生命周期】大模型安全落地-模型更新安全"},
+                    {"id": 606, "title": "【大模型生命周期】大模型AI Infra安全威胁(一)"},
+                    {"id": 607, "title": "【大模型生命周期】README"},
+                    {"id": 608, "title": "【大模型训练】大模型安全落地-模型训练安全"},
+                    {"id": 609, "title": "【大模型部署】大模型部署安全建设指南"},
+                    {"id": 610, "title": "【大模型部署】大模型安全落地-模型部署安全"},
+                    {"id": 611, "title": "【大模型微调】AI脑额叶摘除术式-消除\"安全对齐\"的思想钢印"},
+                    {"id": 612, "title": "【大模型微调】LLM安全之从0到1微调安全大模型"}
+                ]
+            },
+            {
+                "name":  "应用层安全",
+                "articles":  [
+                    {"id": 613, "title": "【Agent】AI Agent：从工具劫持到 RCE"},
+                    {"id": 614, "title": "【Agent】AI Agent记忆系统攻击与防御：从上下文污染到工具链劫持的知识泄露"},
+                    {"id": 615, "title": "【Agent】AI时代的EICAR病毒：用魔术字符串瘫痪Claude的攻防实验"},
+                    {"id": 616, "title": "【Agent】大模型驱动的多智能体系统安全现状分析"},
+                    {"id": 617, "title": "【Agent】一篇文章带你了解Agent Skills安全：从威胁建模到纵深防御"},
+                    {"id": 618, "title": "【Agent】Agentic AI的上下文操纵攻击与信任边界安全：自主智能体时代的攻防博弈"},
+                    {"id": 619, "title": "【Agent】从 Chatbot 到 Autonomous Agents-新型LLM攻击漏洞总结"},
+                    {"id": 620, "title": "【Agent】AI Agent工具调用链劫持：从上下文污染到持久化后门的系统化攻防"},
+                    {"id": 621, "title": "【Agent】LLM Agent工具调用安全：从函数调用机制到MCP协议攻防的深度剖析"},
+                    {"id": 622, "title": "【Agent】从Token流架构到子进程注入全面分析IBM Bob编码Agent间接提示注入漏洞"},
+                    {"id": 623, "title": "【Agent】当 AI 开始\"代你执行\"：企业级 AI Agent 的真实攻击面与安全边界重构"},
+                    {"id": 624, "title": "【Agent】浅谈AI Agent Skill 安全风险"},
+                    {"id": 625, "title": "【Agent】Agentic AI 安全攻防浅度实战"},
+                    {"id": 626, "title": "【Agent】AI Agent 上下文Context安全风险_不止于泄露威胁"},
+                    {"id": 627, "title": "【Agent】AI Agent攻击面介绍与具体案例"},
+                    {"id": 628, "title": "【MCP】MCP服务器安全风险分析：未授权访问与工具函数漏洞"},
+                    {"id": 629, "title": "【MCP】MCPJam Inspector远程代码执行漏洞(CVE-2026-23744)"},
+                    {"id": 630, "title": "【MCP】MCP工具链安全：从描述投毒到凭据窃取的完整攻击路径剖析"},
+                    {"id": 631, "title": "【MCP】MCP特性及攻击面"},
+                    {"id": 632, "title": "【MCP】从0开始研究MCP应用与安全篇（一）"},
+                    {"id": 633, "title": "【RAG】RAG系统的向量空间劫持：当余弦相似度成为武器的艺术"},
+                    {"id": 634, "title": "【RAG】RAG投毒攻防--从检索污染到激活检测"},
+                    {"id": 635, "title": "【RAG】深渊：RAG For Security的双刃剑"}
+                ]
+            },
+            {
+                "name":  "数据层的安全",
+                "articles":  [
+                    {"id": 636, "title": "【其他】云对象存储桶验证漏洞？模型和数据被投毒、机器沦陷？- AI & 云安全"},
+                    {"id": 637, "title": "【其他】联邦学习真的安全吗？结合实战聊聊联邦学习存在的安全威胁"},
+                    {"id": 638, "title": "【其他】LLM智能体记忆注入攻击浅度剖析：原理、案例与防御全指南"},
+                    {"id": 639, "title": "【隐私窃取与反演攻击】AI模型安全之模型反演"},
+                    {"id": 640, "title": "【隐私窃取与反演攻击】大模型隐私攻击"},
+                    {"id": 641, "title": "【隐私窃取与反演攻击】AI模型安全之权重窃取"},
+                    {"id": 642, "title": "【隐私窃取与反演攻击】大模型隐私攻击技术"},
+                    {"id": 643, "title": "【数据投毒】训练数据投毒"},
+                    {"id": 644, "title": "【数据投毒】大模型安全之数据投毒（Data Poisoning）"},
+                    {"id": 645, "title": "【数据投毒】AI模型安全之样本攻击"},
+                    {"id": 646, "title": "【数据投毒】大模型安全落地-训练数据安全"},
+                    {"id": 647, "title": "【数据投毒】AI模型安全之模型投毒"}
+                ]
+            }
+        ]
+    },
+    {
+        "name":  "AI赋能安全",
+        "topics":  [
+            {
+                "name":  "红队",
+                "articles":  [
+                    {"id": 648, "title": "【自动化攻防探索】张力拉满、丝滑对接：大模型LLM赋能eBPF重塑网络攻击防御新范式"},
+                    {"id": 649, "title": "【自动化攻防探索】红队视角：大型语言模型（LLM）多维攻击面思路"},
+                    {"id": 650, "title": "【自动化攻防探索】LLM Agent 时代的自动化攻防实践与风险总结"},
+                    {"id": 651, "title": "【自动化攻防探索】AI-for-安全攻防：自动化渗透-Agent-的工程设计与实践"},
+                    {"id": 652, "title": "【自动化攻防探索】IntentLang：以第一性原理与意图工程重建-AI-Agent"},
+                    {"id": 653, "title": "【自动化攻防探索】为了创造-AI-native-programming-language-我-hack-了-CPython-的-str"},
+                    {"id": 654, "title": "【自动化攻防探索】AI大模型在红队攻击中的创新应用与防御思考"},
+                    {"id": 655, "title": "【免杀对抗-绕过】绕过AI安全模型检测：利用AI盲区构建不可见的动态执行链"},
+                    {"id": 656, "title": "【免杀对抗-绕过】大模型时代下WebShell的新型绕过技术（超详版）"},
+                    {"id": 657, "title": "【免杀对抗-绕过】限定逻辑条件下AI安全大模型对恶意代码检测的局限性"},
+                    {"id": 658, "title": "【免杀对抗-绕过】【免杀小白用 AI 打阿里云伏魔，PHP 赛道第 30 名】免杀小白用 AI 打阿里云伏魔，PHP 赛道第 30 名"},
+                    {"id": 659, "title": "【自动化挖掘与审计】从灵感到落地：用Claude Skills实现_一键代码审计_全过程"},
+                    {"id": 660, "title": "【自动化挖掘与审计】从0到1大模型MCP自动化漏洞挖掘实践"},
+                    {"id": 661, "title": "【自动化挖掘与审计】基于AI的开源代码安全审计研究"},
+                    {"id": 662, "title": "【自动化挖掘与审计】DeepAudit源码深度解析"},
+                    {"id": 663, "title": "【自动化挖掘与审计】告别手工验证！MCP SSE结合AI实现FOFA+PoC全自动化漏洞挖掘"},
+                    {"id": 664, "title": "【武器化】FOFA 与 MCP 全流程实战：从交互聊天到信息收集解析"},
+                    {"id": 665, "title": "【武器化】自定义MCP&skill技能分析漏洞利用链"},
+                    {"id": 666, "title": "【武器化】【AI赋能】MCP+Skill能力下的前端JS逆向自动化落地"},
+                    {"id": 667, "title": "【武器化】我们拆解了 5621 个先知研究文章，编写了一个研究员 skill"},
+                    {"id": 668, "title": "【武器化】写了很多 Agent 之后，我开始重新思考：我们到底在造什么样的 Agent？"}
+                ]
+            },
+            {
+                "name":  "论文系列",
+                "articles":  [
+                    {"id": 669, "title": "【漏洞修复】多智能体端到端漏洞管理以缓解重复漏洞"},
+                    {"id": 670, "title": "【漏洞修复】Vul-R2-用于自动漏洞修复的推理大型语言模型"},
+                    {"id": 671, "title": "【自主渗透测试智能体】AI在现代渗透测试中的作用"},
+                    {"id": 672, "title": "【自主渗透测试智能体】LLM Agent 可以自主攻击网站"},
+                    {"id": 673, "title": "【自主渗透测试智能体】在真实世界渗透测试中比较AI智能体与网络安全专业人员"},
+                    {"id": 674, "title": "【自主渗透测试智能体】面向Web的多智能体渗透测试AI"},
+                    {"id": 675, "title": "【LLM 驱动的模糊测试】deepSURF-结合静态分析与大型语言模型引导的模糊测试生成以检测Rust内存安全漏洞"},
+                    {"id": 676, "title": "【LLM 驱动的模糊测试】Fuzz4All-利用大型语言模型进行通用模糊测试"},
+                    {"id": 677, "title": "【LLM 增强静态分析】Artemis-基于静态污点分析检测PHP Web应用中的SSRF漏洞"},
+                    {"id": 678, "title": "【LLM 增强静态分析】利用大型语言模型减少静态错误检测中的误报-一项工业界的实证研究"},
+                    {"id": 679, "title": "【LLM 增强静态分析】IRIS-基于大型语言模型辅助的静态分析检测安全漏洞"},
+                    {"id": 680, "title": "【LLM 增强静态分析】基于大型语言模型的上下文增强漏洞检测"},
+                    {"id": 681, "title": "【LLM 增强静态分析】LLMxCPG-通过代码属性图引导的大型语言模型实现上下文感知的漏洞检测"},
+                    {"id": 682, "title": "【LLM 增强静态分析】QLPro-系统整合大型语言模型与静态分析工具实现全项目漏洞检测"},
+                    {"id": 683, "title": "【LLM 增强静态分析】SAST-Genius-结合大型语言模型与静态应用安全测试以改进漏洞发现"},
+                    {"id": 684, "title": "README"}
+                ]
+            },
+            {
+                "name":  "相关议题",
+                "articles":  [
+                    {"id": 685, "title": "更多流程，更多漏洞：用大型语言模型和定制 DFA 赋能 SAST"},
+                    {"id": 686, "title": "LLMDYara：基于 LLMs 的自动化 YARA 规则生成，具备可解释的文件功能和 DNAHash"},
+                    {"id": 687, "title": "当护栏不足以实现：用架构控制重新发明Agentic AI 安全"},
+                    {"id": 688, "title": "基于 AI 的基于图像的命令与控制（C2）框架：利用 AI 模型隐藏和提取 C2 图像中的命令"},
+                    {"id": 689, "title": "增强现代威胁情报：大型语言模型在提取可作 TTP 攻击链中的关键作用"},
+                    {"id": 690, "title": "JDD：通过自下而上工具搜索和数据流辅助有效载荷构建，深入挖掘 Java 反序列化设备链"},
+                    {"id": 691, "title": "USA-25-More-Flows-More-Bugs-Empowering"},
+                    {"id": 692, "title": "先知安全沙龙第11场 - AI应用安全攻防实录"},
+                    {"id": 693, "title": "先知安全沙龙第11场 - 高自动化Java代码审计工作流实践指北"},
+                    {"id": 694, "title": "先知安全沙龙第11场 - 大模型时代的容器安全攻防实践"}
+                ]
+            },
+            {
+                "name":  "CTF",
+                "articles":  [
+                    {"id": 695, "title": "阿里云 CTF 2026 失败复盘：当我试图用复杂架构驾驭承影 Agent"},
+                    {"id": 696, "title": "7天Top 9：我如何让 Claude 手搓一个全自动 CTF 选手"},
+                    {"id": 697, "title": "从随机波动到稳定产出：CTF自动化解题的候选调度与重试架构"}
+                ]
+            },
+            {
+                "name":  "数据安全",
+                "articles":  [
+                    {"id": 698, "title": "MingJing (明镜)：基于混合架构的智能中文敏感信息识别"},
+                    {"id": 699, "title": "从0到1AI Agent检测敏感信息泄露实践"}
+                ]
+            },
+            {
+                "name":  "DevSecOps-SDL",
+                "articles":  [
+                    {"id": 700, "title": "漏洞自动分析和修复AgentButtercup 如何打通检索—分析—修补—验证闭环"},
+                    {"id": 701, "title": "越权扫描器落地实践"},
+                    {"id": 702, "title": "腾讯云XCheck落地实践"},
+                    {"id": 703, "title": "AI自动化漏洞修复技术探索及实践"},
+                    {"id": 704, "title": "基于RAG与MCP的LLM辅助SAST实践与优化"},
+                    {"id": 705, "title": "使用llm来辅助静态扫描的人工审计"},
+                    {"id": 706, "title": "SCA的\"最后一公里\"：基于LLM Agent联动SAST-DAST的漏洞可达性分析实践"},
+                    {"id": 707, "title": "二开YASA实现Java反射分析"},
+                    {"id": 708, "title": "利用大语言模型优化 CodeQL 漏洞挖掘"},
+                    {"id": 709, "title": "自动化漏洞挖掘：过去、现在与未来——AI 的上限在哪里？"},
+                    {"id": 710, "title": "国际前沿技术 AI+Fuzz 实现细节(CKGFuzzer)"},
+                    {"id": 711, "title": "利用数据流\"清洗\"大模型漏洞检测：LLMSAN 技术解析"},
+                    {"id": 712, "title": "QLCoder：LLM增长的CodeQL Agent框架"},
+                    {"id": 713, "title": "README"}
+                ]
+            },
+            {
+                "name":  "二进制",
+                "articles":  [
+                    {"id": 714, "title": "基于Context上下文驱动的Android 恶意软件检测实现"},
+                    {"id": 715, "title": "Jadx MCP+Trae结合分析思路"},
+                    {"id": 716, "title": "PWN-AI 系列之 AI 手机助手越权"},
+                    {"id": 717, "title": "IDA Pro MCP+Trae结合分析远古病毒熊猫烧香"},
+                    {"id": 718, "title": "MCP加持下全自动化绕过验签&加密app"},
+                    {"id": 719, "title": "利用大型语言模型作为逆向工程的辅助工具"},
+                    {"id": 720, "title": "ida+mcp来实现AI自动化完成逆向"},
+                    {"id": 721, "title": "逆向？不会？MCP给你长脑子！全自动AI傻瓜式逆向，连IDA都不用动"},
+                    {"id": 722, "title": "阿里云百炼+IDA，实现AI自动化逆向APT木马"}
+                ]
+            }
+        ]
+    }
+]
+;
+
+  var STAGE_RGB = {
+    'Readme': [139,148,158],
+    'AI安全基础': [88,166,255],
+    'AI自身安全': [240,120,122],
+    'AI赋能安全': [176,131,240]
+  };
+  function rgba(rgb,a){ return 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+a+')'; }
+  function stageColor(name){ return STAGE_RGB[name] || [139,148,158]; }
+
+  var mainEl = document.getElementById('main');
+  var chart = null;
+  if (typeof echarts === 'undefined') {
+    mainEl.innerHTML = '<div style="padding:30px;color:#8B949E;font-size:13px;">ECharts 加载失败（网络受限），请联网后刷新页面。</div>';
+  } else {
+    chart = echarts.init(mainEl);
+  }
+
+  // ---- 统计 ----
+  var totalTopics = 0, totalArticles = 0;
+  var stageStats = [];
+  KG_DATA.forEach(function(s){
+    var t = s.topics.length, a = 0;
+    s.topics.forEach(function(tp){ a += tp.articles.length; });
+    totalTopics += t; totalArticles += a;
+    stageStats.push(s.name + '：' + t + ' 栏 / ' + a + ' 篇');
+  });
+  document.getElementById('stats').textContent =
+    '三大板块「基础 → 自身安全 → 赋能安全」+ Readme · 共 ' + KG_DATA.length +
+    ' 个阶段 / ' + totalTopics + ' 个栏目 / ' + totalArticles + ' 篇词条　|　' + stageStats.join('　');
+  document.getElementById('footer').innerHTML =
+    '数据来源：<a href="https://xz.aliyun.com/picture-catrow?id=6" target="_blank">先知社区 · AI&amp;Security知识图谱</a>（picture-cat?id=6 全量）。' +
+    '词条节点链接为 xz.aliyun.com/picture-word?id=N，与站点原文一一对应。' +
+    '当前图谱数据抓取于 2026-09-16，词条数与站点标注（280）一致。';
+
+  // ---- 图例 ----
+  var legendEl = document.getElementById('legend');
+  var legendHtml = '';
+  Object.keys(STAGE_RGB).forEach(function(k){
+    legendHtml += '<span><span class="dot" style="background:' + rgba(STAGE_RGB[k],1) + '"></span>' + k + '</span>';
+  });
+  legendHtml += '<span><span class="dot" style="background:rgba(91,122,153,0.55);"></span>词条（点击打开原文）</span>';
+  legendHtml += '<span><span class="dot" style="background:#FFD666;"></span>搜索结果</span>';
+  legendEl.innerHTML = legendHtml;
+
+  // ---- 图谱数据 ----
+  var expanded = {};
+  var highlight = {};
+  var childCount = {};
+
+  function stageId(st){ return 's:' + st; }
+  function topicId(st, tp){ return 't:' + st + '|' + tp; }
+  function articleId(id){ return 'a:' + id; }
+
+  function makeNode(id, name, kind, stage, size, fill, border, bw, labelColor, labelSize, labelWeight, url){
+    return {
+      id: id, name: name, kind: kind, stage: stage, url: url || null,
+      symbolSize: size,
+      itemStyle: { color: fill, borderColor: border, borderWidth: bw },
+      label: { color: labelColor, fontSize: labelSize, fontWeight: labelWeight }
+    };
+  }
+
+  function buildGraph(){
+    var nodes = [], links = [];
+    childCount = {};
+    nodes.push(makeNode('root', 'AI&Security', 'root', null, 36, '#FFFFFF', '#0e1624', 2, '#FFFFFF', 16, 700));
+
+    KG_DATA.forEach(function(st){
+      var sid = stageId(st.name);
+      var rgb = stageColor(st.name);
+      nodes.push(makeNode(sid, st.name, 'stage', st.name, 24, rgba(rgb,1), '#0e1624', 2, rgba(rgb,1), 14, 700));
+      links.push({ source: 'root', target: sid });
+      childCount[sid] = st.topics.length;
+
+      st.topics.forEach(function(tp){
+        var tid = topicId(st.name, tp.name);
+        var isExp = !!expanded[tid];
+        nodes.push(makeNode(tid, tp.name, 'topic', st.name, 13,
+          rgba(rgb, isExp ? 0.8 : 0.45),
+          isExp ? '#A9D4FF' : '#0e1624',
+          isExp ? 2 : 1,
+          rgba(rgb, 0.95), 12, 400));
+        links.push({ source: sid, target: tid });
+        childCount[tid] = tp.articles.length;
+
+        if (isExp) {
+          tp.articles.forEach(function(a){
+            var aid = articleId(a.id);
+            nodes.push(makeNode(aid, a.title, 'article', st.name, 7,
+              'rgba(91,122,153,0.55)', '#0e1624', 1,
+              '#B9C6D6', 10.5, 400,
+              'https://xz.aliyun.com/picture-word?id=' + a.id));
+            links.push({ source: tid, target: aid });
+          });
+        }
+      });
+    });
+
+    nodes.forEach(function(n){
+      if (highlight[n.id]) {
+        n.itemStyle = {
+          color: n.kind === 'article' ? 'rgba(255,214,102,0.92)' : '#FFD666',
+          borderColor: '#FFD666', borderWidth: 2.5,
+          shadowBlur: 18, shadowColor: 'rgba(255,214,102,0.85)'
+        };
+        n.label = { color: '#FFD666', fontSize: n.kind === 'article' ? 11 : 13, fontWeight: 600 };
+      }
+    });
+
+    return { nodes: nodes, links: links };
+  }
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function makeOption(nodes, links){
+    var rep = Math.min(1600, 500 + nodes.length * 2.0);
+    return {
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: 'rgba(22,32,48,0.95)',
+        borderColor: '#2E4A66',
+        textStyle: { color: '#E6EDF3', fontSize: 12 },
+        confine: true,
+        formatter: function(p){
+          var d = p && p.data;
+          if (!d || !d.name) return '';
+          if (d.url) return '<b>' + esc(d.name) + '</b><br/><span style="color:#58A6FF;">点击打开原文 ↗</span>';
+          var cnt = childCount[d.id];
+          if (cnt) return '<b>' + esc(d.name) + '</b><br/>' + cnt + ' 个子项 · 点击展开/折叠';
+          return '<b>' + esc(d.name) + '</b>';
+        }
+      },
+      series: [{
+        type: 'graph',
+        layout: 'force',
+        roam: true,
+        draggable: true,
+        data: nodes,
+        links: links,
+        label: { show: true, position: 'right', distance: 6 },
+        labelLayout: { hideOverlap: true },
+        lineStyle: { color: 'rgba(80,120,160,0.5)', width: 1, curveness: 0.08 },
+        emphasis: { focus: 'adjacency', label: { fontWeight: 600 } },
+        force: { repulsion: rep, edgeLength: [50, 120], gravity: 0.08, friction: 0.55, layoutAnimation: true },
+        scaleLimit: { min: 0.15, max: 4 },
+        animationDuration: 500,
+        animationDurationUpdate: 500
+      }]
+    };
+  }
+
+  function render(){
+    if (!chart) return;
+    var g = buildGraph();
+    chart.setOption(makeOption(g.nodes, g.links));
+  }
+
+  // ---- 交互 ----
+  if (chart) {
+    chart.on('click', function(p){
+      var d = p && p.data;
+      if (!d || !d.id) return;
+      if (d.url) { window.open(d.url, '_blank'); return; }
+      if (d.kind === 'topic') {
+        expanded[d.id] = !expanded[d.id];
+        render();
+      } else if (d.kind === 'stage') {
+        var anyCollapsed = false;
+        KG_DATA.forEach(function(st){
+          if (st.name !== d.stage) return;
+          st.topics.forEach(function(tp){
+            if (!expanded[topicId(st.name, tp.name)]) anyCollapsed = true;
+          });
+        });
+        KG_DATA.forEach(function(st){
+          if (st.name !== d.stage) return;
+          st.topics.forEach(function(tp){ expanded[topicId(st.name, tp.name)] = anyCollapsed; });
+        });
+        render();
+      }
+    });
+    window.addEventListener('resize', function(){ chart.resize(); });
+    render();
+  }
+
+  // 搜索
+  var searchEl = document.getElementById('search');
+  var matchInfo = document.getElementById('matchInfo');
+  var timer = null;
+  function applySearch(q){
+    highlight = {};
+    var f = (q || '').trim().toLowerCase();
+    var matched = 0;
+    if (f) {
+      KG_DATA.forEach(function(st){
+        st.topics.forEach(function(tp){
+          var tid = topicId(st.name, tp.name);
+          var tHit = tp.name.toLowerCase().indexOf(f) >= 0;
+          tp.articles.forEach(function(a){
+            var aHit = a.title.toLowerCase().indexOf(f) >= 0;
+            if (aHit) { highlight[articleId(a.id)] = true; expanded[tid] = true; matched++; }
+          });
+          if (tHit) { highlight[tid] = true; expanded[tid] = true; matched += tp.articles.length; }
+        });
+      });
+    }
+    matchInfo.textContent = f ? ('匹配 ' + matched + ' 篇词条') : '';
+    render();
+  }
+  searchEl.addEventListener('input', function(){
+    clearTimeout(timer);
+    var v = this.value;
+    timer = setTimeout(function(){ applySearch(v); }, 250);
+  });
+  document.getElementById('btnExpand').addEventListener('click', function(){
+    KG_DATA.forEach(function(st){
+      st.topics.forEach(function(tp){ expanded[topicId(st.name, tp.name)] = true; });
+    });
+    searchEl.value = '';
+    applySearch('');
+  });
+  document.getElementById('btnCollapse').addEventListener('click', function(){
+    expanded = {};
+    searchEl.value = '';
+    applySearch('');
+  });
+})();
+</script>
+</body>
+</html>
