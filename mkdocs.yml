@@ -187,6 +187,7 @@ nav:
   - 培训计划表:
       - training/index.md
       - 第 1 周: training/week-01.md
+      - 第 2 周: training/week-02.md
 
 plugins:
   - search

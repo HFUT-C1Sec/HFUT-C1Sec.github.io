@@ -11,13 +11,6 @@ title: 第 1 周
      - 后端：web 服务器、数据库、开发框架、API
      - 一般的 Web 前后端漏洞：HTML 注入、数据泄露、XSS、CSRF
 
-视频讲解主线：
-
-- 从传统攻防视角看待，网络安全的技术范围
-- BURP 安装和基本功能使用教学
-- Authentication 原理与注意事项
-- Path Traversal 原理与注意事项
-
 实验內容：
 
 - Authentication：14 个实验
@@ -183,6 +176,62 @@ Burp 常用的功能有三个：
 Authentication 漏洞虽然定义上算漏洞，但性质上更像一种设计缺陷。如信任前端，无二次校验，无次数限制等。这是最符合个人生活常识的一种漏洞，所以技术原理上没有什么好讲的。
 
 详细介绍可以参考 PortSwigger 
+
+完成一个靶场很简单，但不简单的是你是否真的理解了流程，是否真的知道这个过程的每个细节流转是如何实现的。
+
+下面以 Authentication 的 2FA broken logic 作为例子，我们可以如何思考一个实验：
+
+### 1.先走一遍正常逻辑
+
+按照账号 wiener：peter 登录，数据包反应了一系列登录验证逻辑
+
+![image-20261107135046506](../assets/training/week-01/image-20261107135046506.png)
+
+1：GET login，获取登录界面  
+8：POST login：输入了账密后登录，302跳转  
+9：GET login2：跳转到需要输入验证码的界面  
+20：POST login2：输入邮件验证码  
+21：GET /my-account?id=wiener，成功get到内部修改邮箱界面
+
+中间忽略的部分是作者点击了邮箱查看验证码，和主流程无关
+
+然后我们分析一下，中间的校验流程，输入账密后，响应说明 set-cookie，cookie更改掉  
+set-cookie：p0DyjCVTT3ergsWoncyVmmFeJxmrxHtp
+
+![image-20261107135903548](../assets/training/week-01/image-20261107135903548.png)
+
+进入邮箱登录界面，观察到 cookie 确实被更改，并且verify=wiener
+
+![image-20261107140044839](../assets/training/week-01/image-20261107140044839.png)
+
+输入验证码然后点击发送，响应再次更改cookie，为：  
+U2SSTOpxhT4VHxVnFrBD1zqDexGE03Yx
+
+![image-20261107140158210](../assets/training/week-01/image-20261107140158210.png)
+
+get 到最终界面
+
+![image-20261107140257540](../assets/training/week-01/image-20261107140257540.png)
+
+### 2.开始思考细节
+
+你乍一看不觉得有问题，这里id和cookie都很正常，是一个很正常的校验流程，那么问题出在哪里呢？
+
+login1需要你输入用户的账号密码，我们没有Carlos的账密，login1 应该不能作为漏洞点。我们可以尝试窃取 wiener 的 login1 登录状态。
+
+login1 不可能，那么问题就只能发生在login2：
+
+1. 包参数中出现了 verify=wiener、cookie=xxx两个参数，cookie是用来证明身份用的，
+2. 如果验证逻辑严格验证cookie，cookie与登录的用户身份强绑定，根据这个cookie来向用户发送验证码，那么皆大欢喜，这就是一个安全的验证流程。
+3. 可是，你在外层并看不出这点，如果它校验没有仔细核对cookie呢？我们假设，这个cookie实际上代表了第一层账密登录成功的临时状态，向谁发送邮箱验证码？如果不是cookie，是verify吗？
+
+如果它只根据 verify 来发送第二步 cookie，那么再进一步推导，当我们更改了verify后发送数据包，是wiener 收到这个验证码，还是carlos收到？
+
+我们修改verify=carlos，发送，响应成功。回到wiener的邮箱：wiener并没有收到邮件，那么这个邮件给谁？是的，carlos。而邮箱验证码是可以爆破的，就能破解
+
+根本原因在于：没确认verify和tmp session是否为一对状态，login2认为如果login1到了这里那么已经成功登陆了，于是发送邮箱验证码，更严重的是验证码可爆破。
+
+本身2FA验证应当假设两步的请求这都需要验证，但是这里第二步假设了第一步成功验证，这就是掩耳盗铃。也就是：不要信任前端问题.
 
 ## 04-路径遍历/文件包含-漏洞原理介绍
 
