@@ -10,8 +10,8 @@ title: 第 2 周
 参考阅读材料：
 
 - [OWASP-命令注入](https://community.owasp.org/attacks/Command_Injection)
-- [OWASP WSTG - Command Injection](https://wstg.owasp.org/latest/4-Web_Application_Security_Testing/07-Injection/12-Command_Injection/)
-- [OWASP WSTG – Business Logic Data Validation](https://wstg.owasp.org/latest/4-Web_Application_Security_Testing/10-Business_Logic/01-Business_Logic_Data_Validation/)
+- [OWASP WSTG - Command Injection](https://wstg.owasp.org/latest/11-Injection/11-Command_Injection/)
+- [OWASP WSTG – Business Logic Data Validation](https://wstg.owasp.org/latest/14-Business_Logic/01-Business_Logic_Data_Validation/)
 
 拓展材料：
 
